@@ -24,7 +24,8 @@
     --padY:8px;
     --padX:6px;
 
-    --itemsMaxH: 62vh;
+    /* ✅ 物品区滚动高度：稍微给它多一点空间 */
+    --itemsMaxH: 66vh;
 
     /* ✅ 命中区扩展（更容易投进） */
     --hitPad: 30px;
@@ -37,6 +38,12 @@
     --binHint: 16px;
     --binHintWeight: 700;
     --binHintColor: rgba(17,24,39,.72);
+
+    /* ✅ 整体更紧凑 */
+    --headerPad: 12px;
+    --mainPad: 12px;
+    --sectionGap: 10px;
+    --h1Size: 24px;
   }
 
   body.level-10{
@@ -47,13 +54,15 @@
     --radius:12px;
     --padY:10px;
     --padX:8px;
-    --itemsMaxH: 62vh;
 
+    --itemsMaxH: 66vh;
     --hitPad: 36px;
     --binMinH: 160px;
 
     --binTitle: 21px;
     --binHint: 17px;
+
+    --h1Size: 25px;
   }
 
   body.level-20{
@@ -64,13 +73,15 @@
     --radius:10px;
     --padY:9px;
     --padX:7px;
-    --itemsMaxH: 62vh;
 
+    --itemsMaxH: 66vh;
     --hitPad: 32px;
     --binMinH: 150px;
 
     --binTitle: 20px;
     --binHint: 16px;
+
+    --h1Size: 24px;
   }
 
   body.level-40{
@@ -81,13 +92,15 @@
     --radius:9px;
     --padY:7px;
     --padX:6px;
-    --itemsMaxH: 58vh;
 
+    --itemsMaxH: 62vh;
     --hitPad: 30px;
     --binMinH: 135px;
 
     --binTitle: 19px;
     --binHint: 15px;
+
+    --h1Size: 23px;
   }
 
   body{
@@ -98,15 +111,15 @@
   }
 
   header{
-    padding:16px;
+    padding:var(--headerPad);
     display:flex;
     flex-wrap:wrap;
-    gap:12px;
+    gap:10px;
     justify-content:space-between;
     align-items:flex-end;
   }
-  h1{margin:0;font-size:26px;}
-  p{margin:6px 0 0;color:var(--muted)}
+  h1{margin:0;font-size:var(--h1Size);}
+  header p{margin:4px 0 0;color:var(--muted);font-size:14px;}
 
   button,select{
     font-size:16px;
@@ -127,28 +140,29 @@
   }
 
   main{
-    padding:16px;
+    padding:var(--mainPad);
     max-width:980px;
     margin:auto;
   }
 
   .status{
     display:flex;
-    gap:12px;
+    gap:10px;
     flex-wrap:wrap;
-    margin-bottom:12px;
+    margin-bottom:var(--sectionGap);
   }
   .pill{
     padding:6px 12px;
     border-radius:999px;
     background:#fff;
     border:1px solid rgba(0,0,0,.1);
+    font-size:15px;
   }
 
   .grid{
     display:grid;
     grid-template-columns:1fr;
-    gap:14px;
+    gap:12px;
   }
   @media(min-width:760px){
     .grid{grid-template-columns:1.25fr .75fr;}
@@ -157,8 +171,37 @@
   .items,.bins{
     background:var(--card);
     border-radius:18px;
-    padding:14px;
+    padding:12px;
     box-shadow:var(--shadow);
+  }
+
+  /* ✅ 标题行：左边标题 + 右边上下翻按钮 */
+  .panelTop{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin:0 0 8px;
+  }
+  .panelTop h3{
+    margin:0;
+    font-size:18px;
+  }
+
+  .scrollBtns{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .scrollBtn{
+    background:#fff;
+    color:#111827;
+    border:1px solid rgba(0,0,0,.15);
+    padding:8px 10px;
+    border-radius:12px;
+    font-size:16px;
+    line-height:1;
+    min-width:56px;
   }
 
   .itemsWrap{
@@ -169,6 +212,7 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding-right:2px;
+    touch-action: pan-y; /* ✅ 更明确：允许手指上下滚动 */
   }
 
   .itemsWrap::-webkit-scrollbar{ width: 8px; }
@@ -210,7 +254,7 @@
     border:2px dashed rgba(0,0,0,.25);
     border-radius:18px;
     padding:14px;
-    min-height: var(--binMinH); /* ✅ 关键：空篮子也够大 */
+    min-height: var(--binMinH);
     box-sizing:border-box;
     transition: transform .08s ease, background .08s ease, border-color .08s ease;
   }
@@ -247,7 +291,7 @@
     flex-wrap:wrap;
     gap:8px;
     margin-top:8px;
-    min-height: 34px; /* ✅ 即使还没放东西，也留一点“放置感” */
+    min-height: 34px;
   }
 
   .chip{
@@ -259,10 +303,10 @@
   }
 
   .msg{
-    margin-top:8px;
+    margin-top:6px;
     font-size:18px;
     color:var(--muted);
-    min-height:24px;
+    min-height:22px;
   }
 
   .drag-ghost{
@@ -305,12 +349,21 @@
 
   <div class="grid">
     <div class="items">
-      <h3 style="margin:0 0 10px;">物品</h3>
+      <div class="panelTop">
+        <h3>物品</h3>
+        <div class="scrollBtns">
+          <button class="scrollBtn" id="btnUp" type="button">⬆︎ 上翻</button>
+          <button class="scrollBtn" id="btnDown" type="button">⬇︎ 下翻</button>
+        </div>
+      </div>
       <div class="itemsWrap" id="itemsWrap"></div>
     </div>
 
     <div class="bins">
-      <h3 style="margin:0 0 10px;">篮子</h3>
+      <div class="panelTop">
+        <h3>篮子</h3>
+        <div style="width:140px"></div>
+      </div>
       <div class="binsWrap" id="binsWrap"></div>
     </div>
   </div>
@@ -561,6 +614,14 @@ function enableDrag(el,item){
     };
   };
 }
+
+/* ✅ 物品区“上翻/下翻”按钮：一次滚一屏，老人更轻松 */
+function scrollItems(delta){
+  const h = Math.max(120, Math.floor(itemsWrap.clientHeight * 0.85));
+  itemsWrap.scrollBy({ top: delta * h, behavior: "smooth" });
+}
+document.getElementById("btnUp").onclick = ()=>scrollItems(-1);
+document.getElementById("btnDown").onclick = ()=>scrollItems(1);
 
 document.getElementById("btnNew").onclick=newRound;
 document.getElementById("btnReset").onclick=newRound;
