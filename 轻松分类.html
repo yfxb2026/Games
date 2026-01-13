@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>轻松分类</title>
+
+<style>
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fbfaf7;
+  color:#1f2937;
+}
+header{
+  padding:16px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  justify-content:space-between;
+}
+h1{margin:0;font-size:26px;}
+p{margin:6px 0 0;color:#6b7280}
+
+button,select{
+  font-size:16px;
+  padding:10px 14px;
+  border-radius:14px;
+  border:1px solid rgba(0,0,0,.15);
+  background:#fff;
+}
+button{
+  background:#111827;
+  color:#fff;
+  border:none;
+}
+button.secondary{
+  background:#fff;
+  color:#111827;
+  border:1px solid rgba(0,0,0,.15);
+}
+
+main{
+  padding:16px;
+  max-width:980px;
+  margin:auto;
+}
+
+.status{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.pill{
+  padding:6px 12px;
+  border-radius:999px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.1);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+}
+@media(min-width:760px){
+  .grid{grid-template-columns:1.2fr .8fr;}
+}
+
+.items,.bins{
+  background:#fff;
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.itemsWrap{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+@media(min-width:760px){
+  .itemsWrap{grid-template-columns:repeat(5,1fr);}
+}
+
+.item{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:16px;
+  padding:10px 8px;
+  text-align:center;
+  touch-action:none;
+  user-select:none;
+}
+.item .emoji{font-size:34px; line-height:1.1;}
+.item .label{font-size:16px; margin-top:4px;}
+
+.item.placeholder{
+  opacity:0;
+  pointer-events:none;
+}
+
+.binsWrap{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.bin{
+  border:2px dashed rgba(0,0,0,.25);
+  border-radius:18px;
+  padding:14px;
+}
+.bin.active{
+  background:#f9fafb;
+}
+
+.binName{font-size:20px;font-weight:600}
+.binHint{font-size:14px;color:#6b7280}
+
+.binItems{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+.chip{
+  background:#111827;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:15px;
+}
+
+.msg{
+  margin-top:8px;
+  font-size:18px;
+  color:#6b7280;
+  min-height: 24px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <h1>轻松分类</h1>
+    <p>把物品拖到合适的篮子里</p>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <select id="levelSel" title="每局物品数量">
+      <option value="10">轻松（10）</option>
+      <option value="20" selected>适中（20）</option>
+      <option value="40">丰富（40）</option>
+    </select>
+    <button id="btnNew">换一组</button>
+    <button class="secondary" id="btnReset">清空</button>
+  </div>
+</header>
+
+<main>
+  <div class="status">
+    <div class="pill">完成 <b id="done">0</b>/<b id="total">0</b></div>
+    <div class="pill">得分 <b id="score">0</b></div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="grid">
+    <div class="items">
+      <h3 style="margin:0 0 10px;">物品</h3>
+      <div class="itemsWrap" id="itemsWrap"></div>
+    </div>
+
+    <div class="bins">
+      <h3 style="margin:0 0 10px;">篮子</h3>
+      <div class="binsWrap" id="binsWrap"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+/**
+ * 三类不变：food / clothes / tools
+ * 你以后要加物品，就继续往 items 数组里追加即可（id 不重复就行）
+ */
+const SET = {
+  bins:[
+    {id:"food",title:"食物",hint:"能吃的"},
+    {id:"clothes",title:"衣物",hint:"穿戴的"},
+    {id:"tools",title:"工具",hint:"用来做事"}
+  ],
+  items:[
+    // 食物 food（尽量多样）
+    {id:"food_apple",emoji:"🍎",label:"苹果",cat:"food"},
+    {id:"food_banana",emoji:"🍌",label:"香蕉",cat:"food"},
+    {id:"food_orange",emoji:"🍊",label:"橙子",cat:"food"},
+    {id:"food_grapes",emoji:"🍇",label:"葡萄",cat:"food"},
+    {id:"food_watermelon",emoji:"🍉",label:"西瓜",cat:"food"},
+    {id:"food_peach",emoji:"🍑",label:"桃子",cat:"food"},
+    {id:"food_pear",emoji:"🍐",label:"梨",cat:"food"},
+    {id:"food_strawberry",emoji:"🍓",label:"草莓",cat:"food"},
+    {id:"food_cherries",emoji:"🍒",label:"樱桃",cat:"food"},
+    {id:"food_pineapple",emoji:"🍍",label:"菠萝",cat:"food"},
+    {id:"food_lemon",emoji:"🍋",label:"柠檬",cat:"food"},
+    {id:"food_kiwi",emoji:"🥝",label:"猕猴桃",cat:"food"},
+    {id:"food_mango",emoji:"🥭",label:"芒果",cat:"food"},
+    {id:"food_tomato",emoji:"🍅",label:"番茄",cat:"food"},
+    {id:"food_carrot",emoji:"🥕",label:"胡萝卜",cat:"food"},
+    {id:"food_corn",emoji:"🌽",label:"玉米",cat:"food"},
+    {id:"food_potato",emoji:"🥔",label:"土豆",cat:"food"},
+    {id:"food_mushroom",emoji:"🍄",label:"蘑菇",cat:"food"},
+    {id:"food_bread",emoji:"🍞",label:"面包",cat:"food"},
+    {id:"food_rice",emoji:"🍚",label:"米饭",cat:"food"},
+    {id:"food_noodle",emoji:"🍜",label:"面条",cat:"food"},
+    {id:"food_dumpling",emoji:"🥟",label:"饺子",cat:"food"},
+    {id:"food_egg",emoji:"🥚",label:"鸡蛋",cat:"food"},
+    {id:"food_fish",emoji:"🐟",label:"鱼",cat:"food"},
+    {id:"food_meat",emoji:"🍖",label:"肉",cat:"food"},
+    {id:"food_milk",emoji:"🥛",label:"牛奶",cat:"food"},
+    {id:"food_coffee",emoji:"☕",label:"咖啡",cat:"food"},
+
+    // 衣物 clothes
+    {id:"clo_shirt",emoji:"👕",label:"上衣",cat:"clothes"},
+    {id:"clo_pants",emoji:"👖",label:"裤子",cat:"clothes"},
+    {id:"clo_dress",emoji:"👗",label:"裙子",cat:"clothes"},
+    {id:"clo_socks",emoji:"🧦",label:"袜子",cat:"clothes"},
+    {id:"clo_hat",emoji:"🧢",label:"帽子",cat:"clothes"},
+    {id:"clo_shoe",emoji:"👟",label:"鞋子",cat:"clothes"},
+    {id:"clo_boot",emoji:"🥾",label:"靴子",cat:"clothes"},
+    {id:"clo_sandal",emoji:"🩴",label:"拖鞋",cat:"clothes"},
+    {id:"clo_coat",emoji:"🧥",label:"外套",cat:"clothes"},
+    {id:"clo_gloves",emoji:"🧤",label:"手套",cat:"clothes"},
+    {id:"clo_scarf",emoji:"🧣",label:"围巾",cat:"clothes"},
+    {id:"clo_tie",emoji:"👔",label:"领带",cat:"clothes"},
+    {id:"clo_belt",emoji:"🧷",label:"别针",cat:"clothes"},
+    {id:"clo_backpack",emoji:"🎒",label:"背包",cat:"clothes"},
+    {id:"clo_umbrella",emoji:"☂️",label:"雨伞",cat:"clothes"},
+    {id:"clo_ring",emoji:"💍",label:"戒指",cat:"clothes"},
+    {id:"clo_watch",emoji:"⌚",label:"手表",cat:"clothes"},
+    {id:"clo_glasses",emoji:"👓",label:"眼镜",cat:"clothes"},
+    {id:"clo_mask",emoji:"😷",label:"口罩",cat:"clothes"},
+    {id:"clo_cap2",emoji:"🎩",label:"礼帽",cat:"clothes"},
+
+    // 工具 tools
+    {id:"tool_wrench",emoji:"🔧",label:"扳手",cat:"tools"},
+    {id:"tool_hammer",emoji:"🔨",label:"锤子",cat:"tools"},
+    {id:"tool_screwdriver",emoji:"🪛",label:"螺丝刀",cat:"tools"},
+    {id:"tool_saw",emoji:"🪚",label:"锯子",cat:"tools"},
+    {id:"tool_scissors",emoji:"✂️",label:"剪刀",cat:"tools"},
+    {id:"tool_broom",emoji:"🧹",label:"扫把",cat:"tools"},
+    {id:"tool_mop",emoji:"🧽",label:"抹布",cat:"tools"},
+    {id:"tool_bucket",emoji:"🪣",label:"水桶",cat:"tools"},
+    {id:"tool_pan",emoji:"🍳",label:"平底锅",cat:"tools"},
+    {id:"tool_pot",emoji:"🍲",label:"汤锅",cat:"tools"},
+    {id:"tool_knife",emoji:"🔪",label:"刀",cat:"tools"},
+    {id:"tool_spoon",emoji:"🥄",label:"勺子",cat:"tools"},
+    {id:"tool_fork",emoji:"🍴",label:"叉子",cat:"tools"},
+    {id:"tool_flashlight",emoji:"🔦",label:"手电",cat:"tools"},
+    {id:"tool_plug",emoji:"🔌",label:"插头",cat:"tools"},
+    {id:"tool_key",emoji:"🔑",label:"钥匙",cat:"tools"},
+    {id:"tool_lock",emoji:"🔒",label:"锁",cat:"tools"},
+    {id:"tool_phone",emoji:"📱",label:"手机",cat:"tools"},
+    {id:"tool_remote",emoji:"📺",label:"遥控器",cat:"tools"},
+    {id:"tool_book",emoji:"📖",label:"书",cat:"tools"},
+    {id:"tool_pencil",emoji:"✏️",label:"铅笔",cat:"tools"},
+    {id:"tool_ruler",emoji:"📏",label:"尺子",cat:"tools"},
+    {id:"tool_tape",emoji:"🧻",label:"纸巾",cat:"tools"},
+    {id:"tool_bag",emoji:"🛍️",label:"购物袋",cat:"tools"}
+  ]
+};
+
+let state={
+  level:20,
+  score:0,
+  placed:new Set(),
+  binContents:{},
+  picked:[]
+};
+
+const itemsWrap=document.getElementById("itemsWrap");
+const binsWrap=document.getElementById("binsWrap");
+const msg=document.getElementById("msg");
+
+function shuffle(a){
+  // Fisher-Yates 更稳定
+  const arr = a.slice();
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function newRound(){
+  state.score=0;
+  state.placed.clear();
+  state.binContents={};
+
+  const picked = shuffle(SET.items).slice(0, Math.min(state.level, SET.items.length));
+  state.picked = picked;
+
+  render();
+  msg.textContent="开始吧 🙂";
+}
+
+function render(){
+  itemsWrap.innerHTML="";
+  binsWrap.innerHTML="";
+
+  // 物品区：放进去后原位腾空（占位符）
+  state.picked.forEach(it=>{
+    const div=document.createElement("div");
+    if(state.placed.has(it.id)){
+      div.className="item placeholder";
+    }else{
+      div.className="item";
+      div.innerHTML=`<div class="emoji">${it.emoji}</div><div class="label">${it.label}</div>`;
+      enableDrag(div,it);
+    }
+    itemsWrap.appendChild(div);
+  });
+
+  // 篮子区：显示已放入的物品
+  SET.bins.forEach(bin=>{
+    const b=document.createElement("div");
+    b.className="bin";
+    b.dataset.id=bin.id;
+    b.innerHTML=`
+      <div class="binName">${bin.title}</div>
+      <div class="binHint">${bin.hint}</div>
+      <div class="binItems"></div>
+    `;
+    (state.binContents[bin.id]||[]).forEach(it=>{
+      const chip=document.createElement("div");
+      chip.className="chip";
+      chip.textContent=`${it.emoji} ${it.label}`;
+      b.querySelector(".binItems").appendChild(chip);
+    });
+    binsWrap.appendChild(b);
+  });
+
+  document.getElementById("done").textContent=state.placed.size;
+  document.getElementById("total").textContent=state.picked.length;
+  document.getElementById("score").textContent=state.score;
+}
+
+function enableDrag(el,item){
+  el.onpointerdown=e=>{
+    el.setPointerCapture(e.pointerId);
+
+    const ghost=el.cloneNode(true);
+    ghost.style.position="fixed";
+    ghost.style.left=(e.clientX+8)+"px";
+    ghost.style.top=(e.clientY+8)+"px";
+    ghost.style.opacity=".85";
+    ghost.style.zIndex="9999";
+    ghost.style.pointerEvents="none";
+    document.body.appendChild(ghost);
+
+    document.onpointermove=ev=>{
+      ghost.style.left=(ev.clientX+8)+"px";
+      ghost.style.top=(ev.clientY+8)+"px";
+    };
+
+    document.onpointerup=ev=>{
+      document.onpointermove=null;
+      document.onpointerup=null;
+      ghost.remove();
+
+      const bins = Array.from(document.querySelectorAll(".bin"));
+      let dropped = false;
+
+      for(const b of bins){
+        const r=b.getBoundingClientRect();
+        const hit = ev.clientX>r.left && ev.clientX<r.right && ev.clientY>r.top && ev.clientY<r.bottom;
+        if(!hit) continue;
+
+        dropped = true;
+
+        if(b.dataset.id===item.cat){
+          state.placed.add(item.id);
+          state.score++;
+          state.binContents[b.dataset.id] ??= [];
+          state.binContents[b.dataset.id].push(item);
+          msg.textContent="对啦～";
+          render();
+
+          if(state.placed.size === state.picked.length){
+            msg.textContent="这一组完成啦 🎉 点“换一组”继续。";
+          }
+        }else{
+          msg.textContent="换个篮子试试～";
+        }
+        break;
+      }
+
+      if(!dropped){
+        msg.textContent="没关系，再拖一次～";
+      }
+    };
+  };
+}
+
+document.getElementById("btnNew").onclick=newRound;
+document.getElementById("btnReset").onclick=newRound;
+
+document.getElementById("levelSel").onchange=e=>{
+  state.level=Number(e.target.value);
+  newRound();
+};
+
+// 初始值（适中 20）
+state.level = Number(document.getElementById("levelSel").value);
+newRound();
+</script>
+
+</body>
+</html>
