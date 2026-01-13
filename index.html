@@ -27,7 +27,7 @@
     --itemsMaxH: 62vh;
 
     /* ✅ 命中区扩展（像“磁吸”范围） */
-    --hitPad: 22px;
+    --hitPad: 24px;
   }
 
   body.level-10{
@@ -39,7 +39,7 @@
     --padY:10px;
     --padX:8px;
     --itemsMaxH: 62vh;
-    --hitPad: 26px;
+    --hitPad: 28px;
   }
 
   body.level-20{
@@ -51,19 +51,19 @@
     --padY:9px;
     --padX:7px;
     --itemsMaxH: 62vh;
-    --hitPad: 24px;
+    --hitPad: 26px;
   }
 
   body.level-40{
-    --cols:5;          /* ✅ 40 列数=5 */
+    --cols:5;
     --gap:8px;
     --emoji:36px;
     --label:19px;
     --radius:9px;
     --padY:7px;
     --padX:6px;
-    --itemsMaxH: 58vh; /* 稍低一点更稳 */
-    --hitPad: 22px;
+    --itemsMaxH: 58vh;
+    --hitPad: 24px;
   }
 
   body{
@@ -147,8 +147,9 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 
-    padding-right: 2px;
+    padding-right:2px;
   }
+
   .itemsWrap::-webkit-scrollbar{ width: 8px; }
   .itemsWrap::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.18); border-radius: 8px; }
   .itemsWrap::-webkit-scrollbar-track{ background: transparent; }
@@ -197,7 +198,7 @@
     transition: transform .08s ease, background .08s ease, border-color .08s ease;
   }
 
-  /* ✅ 吸附高亮（拖到附近就亮） */
+  /* ✅ 吸附高亮 */
   .bin.active{
     background:#f9fafb;
     border-color: rgba(17,24,39,.55);
@@ -210,7 +211,7 @@
     color:var(--muted);
     margin-top:2px;
   }
-  .binHint:empty{ display:none; } /* ✅ hint 为空就不显示 */
+  .binHint:empty{ display:none; }
 
   .binItems{
     display:flex;
@@ -232,6 +233,16 @@
     font-size:18px;
     color:var(--muted);
     min-height:24px;
+  }
+
+  /* ✅ 拖拽影子：永远保持正方形（由 JS 设定宽高） */
+  .drag-ghost{
+    position:fixed;
+    z-index:9999;
+    pointer-events:none;
+    opacity:.92;
+    transform: scale(1.03);
+    box-shadow: 0 18px 40px rgba(0,0,0,.18);
   }
 </style>
 </head>
@@ -278,11 +289,11 @@
 
 <script>
 const SET = {
+  // ✅ 回到三类：食物 / 衣物 / 工具
   bins:[
     {id:"food",title:"食物",hint:"能吃的"},
     {id:"clothes",title:"衣物",hint:"穿戴的"},
-    {id:"tools",title:"工具",hint:"用来做事"},
-    {id:"animals",title:"动物",hint:""} // ✅ 去掉提示
+    {id:"tools",title:"工具",hint:"用来做事"}
   ],
   items:[
     // 食物 food
@@ -363,37 +374,7 @@ const SET = {
     {id:"tool_tape",emoji:"🧻",label:"纸巾",cat:"tools"},
     {id:"tool_bag",emoji:"🛍️",label:"购物袋",cat:"tools"},
     {id:"tool_brush",emoji:"🪥",label:"牙刷",cat:"tools"},
-    {id:"tool_lamp",emoji:"💡",label:"灯泡",cat:"tools"},
-
-    // 动物 animals
-    {id:"ani_cat",emoji:"🐱",label:"猫",cat:"animals"},
-    {id:"ani_dog",emoji:"🐶",label:"狗",cat:"animals"},
-    {id:"ani_rabbit",emoji:"🐰",label:"兔子",cat:"animals"},
-    {id:"ani_mouse",emoji:"🐭",label:"老鼠",cat:"animals"},
-    {id:"ani_panda",emoji:"🐼",label:"熊猫",cat:"animals"},
-    {id:"ani_tiger",emoji:"🐯",label:"老虎",cat:"animals"},
-    {id:"ani_lion",emoji:"🦁",label:"狮子",cat:"animals"},
-    {id:"ani_monkey",emoji:"🐵",label:"猴子",cat:"animals"},
-    {id:"ani_bear",emoji:"🐻",label:"熊",cat:"animals"},
-    {id:"ani_fox",emoji:"🦊",label:"狐狸",cat:"animals"},
-    {id:"ani_wolf",emoji:"🐺",label:"狼",cat:"animals"},
-    {id:"ani_pig",emoji:"🐷",label:"猪",cat:"animals"},
-    {id:"ani_cow",emoji:"🐮",label:"牛",cat:"animals"},
-    {id:"ani_horse",emoji:"🐴",label:"马",cat:"animals"},
-    {id:"ani_sheep",emoji:"🐑",label:"羊",cat:"animals"},
-    {id:"ani_chicken",emoji:"🐔",label:"鸡",cat:"animals"},
-    {id:"ani_duck",emoji:"🦆",label:"鸭",cat:"animals"},
-    {id:"ani_bird",emoji:"🐦",label:"小鸟",cat:"animals"},
-    {id:"ani_owl",emoji:"🦉",label:"猫头鹰",cat:"animals"},
-    {id:"ani_penguin",emoji:"🐧",label:"企鹅",cat:"animals"},
-    {id:"ani_frog",emoji:"🐸",label:"青蛙",cat:"animals"},
-    {id:"ani_turtle",emoji:"🐢",label:"乌龟",cat:"animals"},
-    {id:"ani_snake",emoji:"🐍",label:"蛇",cat:"animals"},
-    {id:"ani_bee",emoji:"🐝",label:"蜜蜂",cat:"animals"},
-    {id:"ani_butterfly",emoji:"🦋",label:"蝴蝶",cat:"animals"},
-    {id:"ani_crab",emoji:"🦀",label:"螃蟹",cat:"animals"},
-    {id:"ani_whale",emoji:"🐳",label:"鲸鱼",cat:"animals"},
-    {id:"ani_dolphin",emoji:"🐬",label:"海豚",cat:"animals"}
+    {id:"tool_lamp",emoji:"💡",label:"灯泡",cat:"tools"}
   ]
 };
 
@@ -441,22 +422,16 @@ function clearBinHighlights(){
 }
 
 function getHitRect(r, pad){
-  return {
-    left: r.left - pad,
-    right: r.right + pad,
-    top: r.top - pad,
-    bottom: r.bottom + pad
-  };
+  return { left:r.left-pad, right:r.right+pad, top:r.top-pad, bottom:r.bottom+pad };
 }
 
 function findHitBin(x, y){
-  const pad = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hitPad")) || 22;
+  const pad = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hitPad")) || 24;
   const bins = Array.from(document.querySelectorAll(".bin"));
   for(const b of bins){
     const r = b.getBoundingClientRect();
     const hr = getHitRect(r, pad);
-    const hit = x > hr.left && x < hr.right && y > hr.top && y < hr.bottom;
-    if(hit) return b;
+    if(x > hr.left && x < hr.right && y > hr.top && y < hr.bottom) return b;
   }
   return null;
 }
@@ -506,20 +481,33 @@ function enableDrag(el,item){
   el.onpointerdown=e=>{
     el.setPointerCapture(e.pointerId);
 
+    // ✅ 固定拖拽影子为“原卡片的真实宽高”，避免变形
+    const r = el.getBoundingClientRect();
+
     const ghost=el.cloneNode(true);
-    ghost.style.position="fixed";
-    ghost.style.left=(e.clientX+8)+"px";
-    ghost.style.top=(e.clientY+8)+"px";
-    ghost.style.opacity=".88";
-    ghost.style.zIndex="9999";
-    ghost.style.pointerEvents="none";
+    ghost.classList.add("drag-ghost");
+    ghost.style.width = r.width + "px";
+    ghost.style.height = r.height + "px";
+
+    // 让影子内部排版也稳定
+    ghost.style.boxSizing = "border-box";
+
     document.body.appendChild(ghost);
+
+    // ✅ 让影子始终跟随手指中心一点点偏移
+    const offsetX = r.width * 0.15;
+    const offsetY = r.height * 0.15;
+
+    const moveGhost = (x,y)=>{
+      ghost.style.left = (x - r.width/2 + offsetX) + "px";
+      ghost.style.top  = (y - r.height/2 + offsetY) + "px";
+    };
+    moveGhost(e.clientX, e.clientY);
 
     let lastActive = null;
 
     document.onpointermove=ev=>{
-      ghost.style.left=(ev.clientX+8)+"px";
-      ghost.style.top=(ev.clientY+8)+"px";
+      moveGhost(ev.clientX, ev.clientY);
 
       const hitBin = findHitBin(ev.clientX, ev.clientY);
       if(hitBin !== lastActive){
