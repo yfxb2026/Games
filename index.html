@@ -7,12 +7,20 @@
 
 <style>
   :root{
-    --bg:#fbfaf7;
+    /* ✅ 柔和护眼背景（暖米色渐变） */
+    --bg1:#fbf7ef;
+    --bg2:#f3f7f2;
+
     --ink:#1f2937;
     --muted:#6b7280;
-    --card:#ffffff;
-    --shadow:0 10px 30px rgba(0,0,0,.08);
-    --border:rgba(0,0,0,.12);
+
+    /* 卡片用偏暖白，减少冷白刺眼 */
+    --card:#fffdf8;
+
+    /* 更柔和的阴影 */
+    --shadow:0 10px 26px rgba(17,24,39,.08);
+
+    --border:rgba(17,24,39,.14);
 
     --cols:5;
     --gap:10px;
@@ -24,26 +32,24 @@
     --padY:8px;
     --padX:6px;
 
-    /* ✅ 物品区滚动高度：稍微给它多一点空间 */
     --itemsMaxH: 66vh;
 
-    /* ✅ 命中区扩展（更容易投进） */
     --hitPad: 30px;
-
-    /* ✅ 篮子最小高度（保证空篮子也够大） */
     --binMinH: 140px;
 
-    /* ✅ 篮子标题行 */
     --binTitle: 20px;
     --binHint: 16px;
     --binHintWeight: 700;
     --binHintColor: rgba(17,24,39,.72);
 
-    /* ✅ 整体更紧凑 */
     --headerPad: 12px;
     --mainPad: 12px;
     --sectionGap: 10px;
     --h1Size: 24px;
+
+    /* ✅ 轻柔强调色（不刺眼） */
+    --accent:#2f6f60;
+    --accentSoft:rgba(47,111,96,.12);
   }
 
   body.level-10{
@@ -106,8 +112,13 @@
   body{
     margin:0;
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-    background:var(--bg);
     color:var(--ink);
+
+    /* ✅ 背景渐变 + 轻微颗粒感（更温柔） */
+    background:
+      radial-gradient(900px 600px at 20% 10%, rgba(47,111,96,.10), transparent 55%),
+      radial-gradient(900px 600px at 90% 30%, rgba(245,170,110,.12), transparent 55%),
+      linear-gradient(180deg, var(--bg1), var(--bg2));
   }
 
   header{
@@ -125,18 +136,23 @@
     font-size:16px;
     padding:10px 14px;
     border-radius:14px;
-    border:1px solid rgba(0,0,0,.15);
-    background:#fff;
+    border:1px solid rgba(17,24,39,.18);
+    background:rgba(255,255,255,.78);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
+
   button{
-    background:#111827;
+    background:rgba(47,111,96,.92);
     color:#fff;
     border:none;
   }
+  button:active{ transform: translateY(1px); }
+
   button.secondary{
-    background:#fff;
-    color:#111827;
-    border:1px solid rgba(0,0,0,.15);
+    background:rgba(255,255,255,.82);
+    color:var(--ink);
+    border:1px solid rgba(17,24,39,.18);
   }
 
   main{
@@ -154,9 +170,11 @@
   .pill{
     padding:6px 12px;
     border-radius:999px;
-    background:#fff;
-    border:1px solid rgba(0,0,0,.1);
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(17,24,39,.12);
     font-size:15px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 
   .grid{
@@ -173,9 +191,9 @@
     border-radius:18px;
     padding:12px;
     box-shadow:var(--shadow);
+    border:1px solid rgba(17,24,39,.08);
   }
 
-  /* ✅ 标题行：左边标题 + 右边上下翻按钮 */
   .panelTop{
     display:flex;
     align-items:center;
@@ -194,9 +212,9 @@
     align-items:center;
   }
   .scrollBtn{
-    background:#fff;
-    color:#111827;
-    border:1px solid rgba(0,0,0,.15);
+    background:rgba(255,255,255,.9);
+    color:var(--ink);
+    border:1px solid rgba(17,24,39,.16);
     padding:8px 10px;
     border-radius:12px;
     font-size:16px;
@@ -212,16 +230,16 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding-right:2px;
-    touch-action: pan-y; /* ✅ 更明确：允许手指上下滚动 */
+    touch-action: pan-y;
   }
 
   .itemsWrap::-webkit-scrollbar{ width: 8px; }
-  .itemsWrap::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.18); border-radius: 8px; }
+  .itemsWrap::-webkit-scrollbar-thumb{ background: rgba(17,24,39,.18); border-radius: 8px; }
   .itemsWrap::-webkit-scrollbar-track{ background: transparent; }
 
   .item{
-    background:#fff;
-    border:1px solid var(--border);
+    background:rgba(255,255,255,.92);
+    border:1px solid rgba(17,24,39,.14);
     border-radius:var(--radius);
     aspect-ratio: 1 / 1;
     padding:var(--padY) var(--padX);
@@ -251,17 +269,18 @@
   }
 
   .bin{
-    border:2px dashed rgba(0,0,0,.25);
+    border:2px dashed rgba(17,24,39,.22);
     border-radius:18px;
     padding:14px;
     min-height: var(--binMinH);
     box-sizing:border-box;
     transition: transform .08s ease, background .08s ease, border-color .08s ease;
+    background: rgba(255,255,255,.55);
   }
 
   .bin.active{
-    background:#f9fafb;
-    border-color: rgba(17,24,39,.55);
+    background: var(--accentSoft);
+    border-color: rgba(47,111,96,.55);
     transform: scale(1.01);
   }
 
@@ -295,7 +314,7 @@
   }
 
   .chip{
-    background:#111827;
+    background:rgba(47,111,96,.92);
     color:#fff;
     padding:6px 10px;
     border-radius:999px;
@@ -305,7 +324,7 @@
   .msg{
     margin-top:6px;
     font-size:18px;
-    color:var(--muted);
+    color:rgba(31,41,55,.70);
     min-height:22px;
   }
 
@@ -615,7 +634,7 @@ function enableDrag(el,item){
   };
 }
 
-/* ✅ 物品区“上翻/下翻”按钮：一次滚一屏，老人更轻松 */
+/* ✅ 上翻/下翻：一次滚一屏 */
 function scrollItems(delta){
   const h = Math.max(120, Math.floor(itemsWrap.clientHeight * 0.85));
   itemsWrap.scrollBy({ top: delta * h, behavior: "smooth" });
