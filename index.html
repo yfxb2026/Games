@@ -26,8 +26,13 @@
 
     --itemsMaxH: 62vh;
 
-    /* ✅ 命中区扩展（像“磁吸”范围） */
     --hitPad: 24px;
+
+    /* ✅ 篮子标题行（让提示更醒目但不过分） */
+    --binTitle: 20px;
+    --binHint: 16px;
+    --binHintWeight: 700;
+    --binHintColor: rgba(17,24,39,.72);
   }
 
   body.level-10{
@@ -40,6 +45,9 @@
     --padX:8px;
     --itemsMaxH: 62vh;
     --hitPad: 28px;
+
+    --binTitle: 21px;
+    --binHint: 17px;
   }
 
   body.level-20{
@@ -52,6 +60,9 @@
     --padX:7px;
     --itemsMaxH: 62vh;
     --hitPad: 26px;
+
+    --binTitle: 20px;
+    --binHint: 16px;
   }
 
   body.level-40{
@@ -64,6 +75,9 @@
     --padX:6px;
     --itemsMaxH: 58vh;
     --hitPad: 24px;
+
+    --binTitle: 19px;
+    --binHint: 15px;
   }
 
   body{
@@ -137,7 +151,6 @@
     box-shadow:var(--shadow);
   }
 
-  /* ✅ 只让物品区滚动 */
   .itemsWrap{
     display:grid;
     grid-template-columns:repeat(var(--cols), 1fr);
@@ -198,26 +211,39 @@
     transition: transform .08s ease, background .08s ease, border-color .08s ease;
   }
 
-  /* ✅ 吸附高亮 */
   .bin.active{
     background:#f9fafb;
     border-color: rgba(17,24,39,.55);
     transform: scale(1.01);
   }
 
-  .binName{font-size:20px;font-weight:700}
-  .binHint{
-    font-size:14px;
-    color:var(--muted);
-    margin-top:2px;
+  /* ✅ 标题与提示同一行 */
+  .binTop{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:4px;
   }
-  .binHint:empty{ display:none; }
+
+  .binName{
+    font-size:var(--binTitle);
+    font-weight:800;
+    letter-spacing:.3px;
+  }
+
+  .binHintInline{
+    font-size:var(--binHint);
+    font-weight:var(--binHintWeight);
+    color:var(--binHintColor);
+    white-space:nowrap;
+  }
 
   .binItems{
     display:flex;
     flex-wrap:wrap;
     gap:8px;
-    margin-top:10px;
+    margin-top:8px;
   }
 
   .chip{
@@ -235,7 +261,6 @@
     min-height:24px;
   }
 
-  /* ✅ 拖拽影子：永远保持正方形（由 JS 设定宽高） */
   .drag-ghost{
     position:fixed;
     z-index:9999;
@@ -289,14 +314,13 @@
 
 <script>
 const SET = {
-  // ✅ 回到三类：食物 / 衣物 / 工具
   bins:[
     {id:"food",title:"食物",hint:"能吃的"},
     {id:"clothes",title:"衣物",hint:"穿戴的"},
     {id:"tools",title:"工具",hint:"用来做事"}
   ],
   items:[
-    // 食物 food
+    // 食物
     {id:"food_apple",emoji:"🍎",label:"苹果",cat:"food"},
     {id:"food_banana",emoji:"🍌",label:"香蕉",cat:"food"},
     {id:"food_orange",emoji:"🍊",label:"橙子",cat:"food"},
@@ -326,7 +350,7 @@ const SET = {
     {id:"food_cake",emoji:"🍰",label:"蛋糕",cat:"food"},
     {id:"food_icecream",emoji:"🍦",label:"冰淇淋",cat:"food"},
 
-    // 衣物 clothes
+    // 衣物
     {id:"clo_shirt",emoji:"👕",label:"上衣",cat:"clothes"},
     {id:"clo_pants",emoji:"👖",label:"裤子",cat:"clothes"},
     {id:"clo_dress",emoji:"👗",label:"裙子",cat:"clothes"},
@@ -348,7 +372,7 @@ const SET = {
     {id:"clo_cap2",emoji:"🎩",label:"礼帽",cat:"clothes"},
     {id:"clo_bag",emoji:"👜",label:"包",cat:"clothes"},
 
-    // 工具 tools
+    // 工具
     {id:"tool_wrench",emoji:"🔧",label:"扳手",cat:"tools"},
     {id:"tool_hammer",emoji:"🔨",label:"锤子",cat:"tools"},
     {id:"tool_screwdriver",emoji:"🪛",label:"螺丝刀",cat:"tools"},
@@ -378,13 +402,7 @@ const SET = {
   ]
 };
 
-let state={
-  level:20,
-  score:0,
-  placed:new Set(),
-  binContents:{},
-  picked:[]
-};
+let state={ level:20, score:0, placed:new Set(), binContents:{}, picked:[] };
 
 const itemsWrap=document.getElementById("itemsWrap");
 const binsWrap=document.getElementById("binsWrap");
@@ -392,7 +410,7 @@ const msg=document.getElementById("msg");
 const levelSel=document.getElementById("levelSel");
 
 function shuffle(a){
-  const arr = a.slice();
+  const arr=a.slice();
   for(let i=arr.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [arr[i],arr[j]]=[arr[j],arr[i]];
@@ -409,7 +427,6 @@ function newRound(){
   state.score=0;
   state.placed.clear();
   state.binContents={};
-
   applyLevelClass();
 
   state.picked = shuffle(SET.items).slice(0, Math.min(state.level, SET.items.length));
@@ -429,9 +446,9 @@ function findHitBin(x, y){
   const pad = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hitPad")) || 24;
   const bins = Array.from(document.querySelectorAll(".bin"));
   for(const b of bins){
-    const r = b.getBoundingClientRect();
-    const hr = getHitRect(r, pad);
-    if(x > hr.left && x < hr.right && y > hr.top && y < hr.bottom) return b;
+    const r=b.getBoundingClientRect();
+    const hr=getHitRect(r,pad);
+    if(x>hr.left && x<hr.right && y>hr.top && y<hr.bottom) return b;
   }
   return null;
 }
@@ -456,9 +473,12 @@ function render(){
     const b=document.createElement("div");
     b.className="bin";
     b.dataset.id=bin.id;
+
     b.innerHTML=`
-      <div class="binName">${bin.title}</div>
-      <div class="binHint">${bin.hint}</div>
+      <div class="binTop">
+        <div class="binName">${bin.title}</div>
+        <div class="binHintInline">${bin.hint}</div>
+      </div>
       <div class="binItems"></div>
     `;
 
@@ -481,39 +501,33 @@ function enableDrag(el,item){
   el.onpointerdown=e=>{
     el.setPointerCapture(e.pointerId);
 
-    // ✅ 固定拖拽影子为“原卡片的真实宽高”，避免变形
     const r = el.getBoundingClientRect();
 
     const ghost=el.cloneNode(true);
     ghost.classList.add("drag-ghost");
     ghost.style.width = r.width + "px";
     ghost.style.height = r.height + "px";
-
-    // 让影子内部排版也稳定
     ghost.style.boxSizing = "border-box";
-
     document.body.appendChild(ghost);
 
-    // ✅ 让影子始终跟随手指中心一点点偏移
     const offsetX = r.width * 0.15;
     const offsetY = r.height * 0.15;
 
-    const moveGhost = (x,y)=>{
+    const moveGhost=(x,y)=>{
       ghost.style.left = (x - r.width/2 + offsetX) + "px";
       ghost.style.top  = (y - r.height/2 + offsetY) + "px";
     };
-    moveGhost(e.clientX, e.clientY);
+    moveGhost(e.clientX,e.clientY);
 
-    let lastActive = null;
+    let lastActive=null;
 
     document.onpointermove=ev=>{
       moveGhost(ev.clientX, ev.clientY);
-
-      const hitBin = findHitBin(ev.clientX, ev.clientY);
-      if(hitBin !== lastActive){
+      const hitBin=findHitBin(ev.clientX, ev.clientY);
+      if(hitBin!==lastActive){
         clearBinHighlights();
         if(hitBin) hitBin.classList.add("active");
-        lastActive = hitBin;
+        lastActive=hitBin;
       }
     };
 
@@ -522,7 +536,7 @@ function enableDrag(el,item){
       document.onpointerup=null;
       ghost.remove();
 
-      const hitBin = findHitBin(ev.clientX, ev.clientY);
+      const hitBin=findHitBin(ev.clientX, ev.clientY);
       clearBinHighlights();
 
       if(hitBin){
@@ -533,8 +547,7 @@ function enableDrag(el,item){
           state.binContents[hitBin.dataset.id].push(item);
           msg.textContent="对啦～";
           render();
-
-          if(state.placed.size === state.picked.length){
+          if(state.placed.size===state.picked.length){
             msg.textContent="这一组完成啦 🎉 点“换一组”继续。";
           }
         }else{
@@ -555,8 +568,7 @@ levelSel.onchange=e=>{
   newRound();
 };
 
-// 初始
-state.level = Number(levelSel.value);
+state.level=Number(levelSel.value);
 newRound();
 </script>
 
