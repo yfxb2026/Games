@@ -7,7 +7,6 @@
 
 <style>
   :root{
-    /* ✅ 柔和护眼背景（暖米色渐变） */
     --bg1:#fbf7ef;
     --bg2:#f3f7f2;
 
@@ -38,7 +37,6 @@
     --binHintWeight: 700;
     --binHintColor: rgba(17,24,39,.72);
 
-    /* ✅ 更紧凑：头部与主体 padding 再收一点 */
     --headerPadY: 10px;
     --headerPadX: 12px;
     --mainPad: 10px;
@@ -75,7 +73,6 @@
       linear-gradient(180deg, var(--bg1), var(--bg2));
   }
 
-  /* ✅ 顶部：标题 | 状态(居中) | 控件(右) */
   header{
     padding:var(--headerPadY) var(--headerPadX);
     display:grid;
@@ -251,7 +248,6 @@
     font-size:15px;
   }
 
-  /* ✅ 消息更贴近顶部，省空间 */
   .msg{
     margin:6px 0 10px;
     font-size:18px;
@@ -278,7 +274,6 @@
     <p>把物品拖到合适的篮子里</p>
   </div>
 
-  <!-- ✅ 现在状态放到同一行中间 -->
   <div class="topStatus">
     <div class="pill">完成 <b id="done">0</b>/<b id="total">0</b></div>
     <div class="pill">得分 <b id="score">0</b></div>
@@ -328,6 +323,7 @@ const SET = {
     {id:"tools",title:"工具",hint:"用来做事"}
   ],
   items:[
+    // 食物
     {id:"food_apple",emoji:"🍎",label:"苹果",cat:"food"},
     {id:"food_banana",emoji:"🍌",label:"香蕉",cat:"food"},
     {id:"food_orange",emoji:"🍊",label:"橙子",cat:"food"},
@@ -357,6 +353,7 @@ const SET = {
     {id:"food_cake",emoji:"🍰",label:"蛋糕",cat:"food"},
     {id:"food_icecream",emoji:"🍦",label:"冰淇淋",cat:"food"},
 
+    // 衣物
     {id:"clo_shirt",emoji:"👕",label:"上衣",cat:"clothes"},
     {id:"clo_pants",emoji:"👖",label:"裤子",cat:"clothes"},
     {id:"clo_dress",emoji:"👗",label:"裙子",cat:"clothes"},
@@ -378,6 +375,7 @@ const SET = {
     {id:"clo_cap2",emoji:"🎩",label:"礼帽",cat:"clothes"},
     {id:"clo_bag",emoji:"👜",label:"包",cat:"clothes"},
 
+    // 工具
     {id:"tool_wrench",emoji:"🔧",label:"扳手",cat:"tools"},
     {id:"tool_hammer",emoji:"🔨",label:"锤子",cat:"tools"},
     {id:"tool_screwdriver",emoji:"🪛",label:"螺丝刀",cat:"tools"},
@@ -423,6 +421,51 @@ function shuffle(a){
   return arr;
 }
 
+/* ✅ 新：按类别尽量均衡抽题
+   - base = floor(n/3)
+   - rem = n%3
+   - 余数随机分配给某些类别，避免总是固定哪一类更多 */
+function pickBalanced(n){
+  const cats = SET.bins.map(b=>b.id); // ["food","clothes","tools"]
+  const poolByCat = {};
+  cats.forEach(c=>{
+    poolByCat[c] = shuffle(SET.items.filter(it=>it.cat===c));
+  });
+
+  const base = Math.floor(n / cats.length);
+  const rem = n % cats.length;
+
+  // 每类先拿 base
+  const want = {};
+  cats.forEach(c=> want[c]=base);
+
+  // 余数分配：随机挑 rem 个类别各+1
+  const remCats = shuffle(cats).slice(0, rem);
+  remCats.forEach(c=> want[c] += 1);
+
+  // 如果某一类库存不够（理论上不会），就把缺口挪给别的类
+  let picked = [];
+  let short = 0;
+  cats.forEach(c=>{
+    const take = Math.min(want[c], poolByCat[c].length);
+    picked = picked.concat(poolByCat[c].slice(0, take));
+    short += (want[c] - take);
+  });
+
+  // 把缺口从“还有余量”的类别里补齐
+  if(short > 0){
+    const leftovers = [];
+    cats.forEach(c=>{
+      const take = Math.min(want[c], poolByCat[c].length);
+      leftovers.push(...poolByCat[c].slice(take));
+    });
+    picked = picked.concat(leftovers.slice(0, short));
+  }
+
+  // 最后整体再洗牌，让顺序混合
+  return shuffle(picked).slice(0, n);
+}
+
 function applyLevelClass(){
   document.body.classList.remove("level-10","level-20","level-40");
   document.body.classList.add(`level-${state.level}`);
@@ -433,7 +476,11 @@ function newRound(){
   state.placed.clear();
   state.binContents={};
   applyLevelClass();
-  state.picked = shuffle(SET.items).slice(0, Math.min(state.level, SET.items.length));
+
+  // ✅ 这里改成“均衡出题”
+  const n = Math.min(state.level, SET.items.length);
+  state.picked = pickBalanced(n);
+
   render();
   msg.textContent="开始吧 🙂";
 }
