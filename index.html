@@ -26,9 +26,13 @@
 
     --itemsMaxH: 62vh;
 
-    --hitPad: 24px;
+    /* ✅ 命中区扩展（更容易投进） */
+    --hitPad: 30px;
 
-    /* ✅ 篮子标题行（让提示更醒目但不过分） */
+    /* ✅ 篮子最小高度（保证空篮子也够大） */
+    --binMinH: 140px;
+
+    /* ✅ 篮子标题行 */
     --binTitle: 20px;
     --binHint: 16px;
     --binHintWeight: 700;
@@ -44,7 +48,9 @@
     --padY:10px;
     --padX:8px;
     --itemsMaxH: 62vh;
-    --hitPad: 28px;
+
+    --hitPad: 36px;
+    --binMinH: 160px;
 
     --binTitle: 21px;
     --binHint: 17px;
@@ -59,7 +65,9 @@
     --padY:9px;
     --padX:7px;
     --itemsMaxH: 62vh;
-    --hitPad: 26px;
+
+    --hitPad: 32px;
+    --binMinH: 150px;
 
     --binTitle: 20px;
     --binHint: 16px;
@@ -74,7 +82,9 @@
     --padY:7px;
     --padX:6px;
     --itemsMaxH: 58vh;
-    --hitPad: 24px;
+
+    --hitPad: 30px;
+    --binMinH: 135px;
 
     --binTitle: 19px;
     --binHint: 15px;
@@ -155,11 +165,9 @@
     display:grid;
     grid-template-columns:repeat(var(--cols), 1fr);
     gap:var(--gap);
-
     max-height: var(--itemsMaxH);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-
     padding-right:2px;
   }
 
@@ -182,10 +190,7 @@
     justify-content:center;
   }
 
-  .item .emoji{
-    font-size:var(--emoji);
-    line-height:1.05;
-  }
+  .item .emoji{ font-size:var(--emoji); line-height:1.05; }
   .item .label{
     font-size:var(--label);
     font-weight:var(--labelWeight);
@@ -193,10 +198,7 @@
     letter-spacing:.4px;
   }
 
-  .item.placeholder{
-    opacity:0;
-    pointer-events:none;
-  }
+  .item.placeholder{ opacity:0; pointer-events:none; }
 
   .binsWrap{
     display:flex;
@@ -208,6 +210,8 @@
     border:2px dashed rgba(0,0,0,.25);
     border-radius:18px;
     padding:14px;
+    min-height: var(--binMinH); /* ✅ 关键：空篮子也够大 */
+    box-sizing:border-box;
     transition: transform .08s ease, background .08s ease, border-color .08s ease;
   }
 
@@ -217,13 +221,12 @@
     transform: scale(1.01);
   }
 
-  /* ✅ 标题与提示同一行 */
   .binTop{
     display:flex;
     align-items:baseline;
     justify-content:space-between;
     gap:10px;
-    margin-bottom:4px;
+    margin-bottom:6px;
   }
 
   .binName{
@@ -244,6 +247,7 @@
     flex-wrap:wrap;
     gap:8px;
     margin-top:8px;
+    min-height: 34px; /* ✅ 即使还没放东西，也留一点“放置感” */
   }
 
   .chip{
@@ -428,7 +432,6 @@ function newRound(){
   state.placed.clear();
   state.binContents={};
   applyLevelClass();
-
   state.picked = shuffle(SET.items).slice(0, Math.min(state.level, SET.items.length));
   render();
   msg.textContent="开始吧 🙂";
@@ -443,7 +446,7 @@ function getHitRect(r, pad){
 }
 
 function findHitBin(x, y){
-  const pad = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hitPad")) || 24;
+  const pad = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hitPad")) || 30;
   const bins = Array.from(document.querySelectorAll(".bin"));
   for(const b of bins){
     const r=b.getBoundingClientRect();
@@ -502,7 +505,6 @@ function enableDrag(el,item){
     el.setPointerCapture(e.pointerId);
 
     const r = el.getBoundingClientRect();
-
     const ghost=el.cloneNode(true);
     ghost.classList.add("drag-ghost");
     ghost.style.width = r.width + "px";
