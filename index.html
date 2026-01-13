@@ -14,48 +14,56 @@
     --shadow:0 10px 30px rgba(0,0,0,.08);
     --border:rgba(0,0,0,.12);
 
-    /* 默认（适中）参数，会被不同难度覆盖 */
     --cols:5;
-    --gap:12px;
+    --gap:10px;
+
     --emoji:38px;
     --label:20px;
     --labelWeight:800;
+    --radius:10px;
+    --padY:8px;
+    --padX:6px;
+
+    --itemsMaxH: 62vh;
+
+    /* ✅ 命中区扩展（像“磁吸”范围） */
+    --hitPad: 22px;
+  }
+
+  body.level-10{
+    --cols:4;
+    --gap:12px;
+    --emoji:44px;
+    --label:22px;
     --radius:12px;
     --padY:10px;
     --padX:8px;
+    --itemsMaxH: 62vh;
+    --hitPad: 26px;
   }
 
-  /* ✅ 轻松：更大、更疏朗 */
-  body.level-10{
-    --cols:4;
-    --gap:14px;
-    --emoji:44px;
-    --label:22px;
-    --radius:14px;
-    --padY:12px;
-    --padX:10px;
-  }
-
-  /* ✅ 适中：标准 */
   body.level-20{
     --cols:5;
-    --gap:12px;
+    --gap:10px;
     --emoji:40px;
     --label:21px;
-    --radius:12px;
-    --padY:11px;
-    --padX:9px;
-  }
-
-  /* ✅ 丰富：更密（但字尽量大） */
-  body.level-40{
-    --cols:6;
-    --gap:10px;
-    --emoji:36px;
-    --label:19px;
-    --radius:11px;
+    --radius:10px;
     --padY:9px;
     --padX:7px;
+    --itemsMaxH: 62vh;
+    --hitPad: 24px;
+  }
+
+  body.level-40{
+    --cols:5;          /* ✅ 40 列数=5 */
+    --gap:8px;
+    --emoji:36px;
+    --label:19px;
+    --radius:9px;
+    --padY:7px;
+    --padX:6px;
+    --itemsMaxH: 58vh; /* 稍低一点更稳 */
+    --hitPad: 22px;
   }
 
   body{
@@ -129,12 +137,21 @@
     box-shadow:var(--shadow);
   }
 
-  /* ✅ 物品：列数/间距随难度自适应 */
+  /* ✅ 只让物品区滚动 */
   .itemsWrap{
     display:grid;
     grid-template-columns:repeat(var(--cols), 1fr);
     gap:var(--gap);
+
+    max-height: var(--itemsMaxH);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    padding-right: 2px;
   }
+  .itemsWrap::-webkit-scrollbar{ width: 8px; }
+  .itemsWrap::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.18); border-radius: 8px; }
+  .itemsWrap::-webkit-scrollbar-track{ background: transparent; }
 
   .item{
     background:#fff;
@@ -158,8 +175,8 @@
   .item .label{
     font-size:var(--label);
     font-weight:var(--labelWeight);
-    margin-top:6px;
-    letter-spacing:.5px;
+    margin-top:5px;
+    letter-spacing:.4px;
   }
 
   .item.placeholder{
@@ -177,10 +194,23 @@
     border:2px dashed rgba(0,0,0,.25);
     border-radius:18px;
     padding:14px;
+    transition: transform .08s ease, background .08s ease, border-color .08s ease;
+  }
+
+  /* ✅ 吸附高亮（拖到附近就亮） */
+  .bin.active{
+    background:#f9fafb;
+    border-color: rgba(17,24,39,.55);
+    transform: scale(1.01);
   }
 
   .binName{font-size:20px;font-weight:700}
-  .binHint{font-size:14px;color:var(--muted)}
+  .binHint{
+    font-size:14px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .binHint:empty{ display:none; } /* ✅ hint 为空就不显示 */
 
   .binItems{
     display:flex;
@@ -252,7 +282,7 @@ const SET = {
     {id:"food",title:"食物",hint:"能吃的"},
     {id:"clothes",title:"衣物",hint:"穿戴的"},
     {id:"tools",title:"工具",hint:"用来做事"},
-    {id:"animals",title:"动物",hint:"小动物们"}
+    {id:"animals",title:"动物",hint:""} // ✅ 去掉提示
   ],
   items:[
     // 食物 food
@@ -406,11 +436,35 @@ function newRound(){
   msg.textContent="开始吧 🙂";
 }
 
+function clearBinHighlights(){
+  document.querySelectorAll(".bin.active").forEach(b=>b.classList.remove("active"));
+}
+
+function getHitRect(r, pad){
+  return {
+    left: r.left - pad,
+    right: r.right + pad,
+    top: r.top - pad,
+    bottom: r.bottom + pad
+  };
+}
+
+function findHitBin(x, y){
+  const pad = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hitPad")) || 22;
+  const bins = Array.from(document.querySelectorAll(".bin"));
+  for(const b of bins){
+    const r = b.getBoundingClientRect();
+    const hr = getHitRect(r, pad);
+    const hit = x > hr.left && x < hr.right && y > hr.top && y < hr.bottom;
+    if(hit) return b;
+  }
+  return null;
+}
+
 function render(){
   itemsWrap.innerHTML="";
   binsWrap.innerHTML="";
 
-  // 物品区：放进去后原位腾空
   state.picked.forEach(it=>{
     const div=document.createElement("div");
     if(state.placed.has(it.id)){
@@ -423,7 +477,6 @@ function render(){
     itemsWrap.appendChild(div);
   });
 
-  // 篮子区
   SET.bins.forEach(bin=>{
     const b=document.createElement("div");
     b.className="bin";
@@ -462,9 +515,18 @@ function enableDrag(el,item){
     ghost.style.pointerEvents="none";
     document.body.appendChild(ghost);
 
+    let lastActive = null;
+
     document.onpointermove=ev=>{
       ghost.style.left=(ev.clientX+8)+"px";
       ghost.style.top=(ev.clientY+8)+"px";
+
+      const hitBin = findHitBin(ev.clientX, ev.clientY);
+      if(hitBin !== lastActive){
+        clearBinHighlights();
+        if(hitBin) hitBin.classList.add("active");
+        lastActive = hitBin;
+      }
     };
 
     document.onpointerup=ev=>{
@@ -472,21 +534,15 @@ function enableDrag(el,item){
       document.onpointerup=null;
       ghost.remove();
 
-      const bins = Array.from(document.querySelectorAll(".bin"));
-      let dropped = false;
+      const hitBin = findHitBin(ev.clientX, ev.clientY);
+      clearBinHighlights();
 
-      for(const b of bins){
-        const r=b.getBoundingClientRect();
-        const hit = ev.clientX>r.left && ev.clientX<r.right && ev.clientY>r.top && ev.clientY<r.bottom;
-        if(!hit) continue;
-
-        dropped = true;
-
-        if(b.dataset.id===item.cat){
+      if(hitBin){
+        if(hitBin.dataset.id===item.cat){
           state.placed.add(item.id);
           state.score++;
-          state.binContents[b.dataset.id] ??= [];
-          state.binContents[b.dataset.id].push(item);
+          state.binContents[hitBin.dataset.id] ??= [];
+          state.binContents[hitBin.dataset.id].push(item);
           msg.textContent="对啦～";
           render();
 
@@ -496,10 +552,7 @@ function enableDrag(el,item){
         }else{
           msg.textContent="换个篮子试试～";
         }
-        break;
-      }
-
-      if(!dropped){
+      }else{
         msg.textContent="没关系，再拖一次～";
       }
     };
