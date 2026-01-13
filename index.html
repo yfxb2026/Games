@@ -14,12 +14,8 @@
     --ink:#1f2937;
     --muted:#6b7280;
 
-    /* 卡片用偏暖白，减少冷白刺眼 */
     --card:#fffdf8;
-
-    /* 更柔和的阴影 */
     --shadow:0 10px 26px rgba(17,24,39,.08);
-
     --border:rgba(17,24,39,.14);
 
     --cols:5;
@@ -42,95 +38,79 @@
     --binHintWeight: 700;
     --binHintColor: rgba(17,24,39,.72);
 
-    --headerPad: 12px;
-    --mainPad: 12px;
-    --sectionGap: 10px;
+    /* ✅ 更紧凑：头部与主体 padding 再收一点 */
+    --headerPadY: 10px;
+    --headerPadX: 12px;
+    --mainPad: 10px;
+
     --h1Size: 24px;
 
-    /* ✅ 轻柔强调色（不刺眼） */
     --accent:#2f6f60;
     --accentSoft:rgba(47,111,96,.12);
   }
 
   body.level-10{
-    --cols:4;
-    --gap:12px;
-    --emoji:44px;
-    --label:22px;
-    --radius:12px;
-    --padY:10px;
-    --padX:8px;
-
-    --itemsMaxH: 66vh;
-    --hitPad: 36px;
-    --binMinH: 160px;
-
-    --binTitle: 21px;
-    --binHint: 17px;
-
-    --h1Size: 25px;
+    --cols:4; --gap:12px; --emoji:44px; --label:22px; --radius:12px; --padY:10px; --padX:8px;
+    --itemsMaxH: 66vh; --hitPad: 36px; --binMinH: 160px;
+    --binTitle: 21px; --binHint: 17px; --h1Size: 25px;
   }
-
   body.level-20{
-    --cols:5;
-    --gap:10px;
-    --emoji:40px;
-    --label:21px;
-    --radius:10px;
-    --padY:9px;
-    --padX:7px;
-
-    --itemsMaxH: 66vh;
-    --hitPad: 32px;
-    --binMinH: 150px;
-
-    --binTitle: 20px;
-    --binHint: 16px;
-
-    --h1Size: 24px;
+    --cols:5; --gap:10px; --emoji:40px; --label:21px; --radius:10px; --padY:9px; --padX:7px;
+    --itemsMaxH: 66vh; --hitPad: 32px; --binMinH: 150px;
+    --binTitle: 20px; --binHint: 16px; --h1Size: 24px;
   }
-
   body.level-40{
-    --cols:5;
-    --gap:8px;
-    --emoji:36px;
-    --label:19px;
-    --radius:9px;
-    --padY:7px;
-    --padX:6px;
-
-    --itemsMaxH: 62vh;
-    --hitPad: 30px;
-    --binMinH: 135px;
-
-    --binTitle: 19px;
-    --binHint: 15px;
-
-    --h1Size: 23px;
+    --cols:5; --gap:8px; --emoji:36px; --label:19px; --radius:9px; --padY:7px; --padX:6px;
+    --itemsMaxH: 62vh; --hitPad: 30px; --binMinH: 135px;
+    --binTitle: 19px; --binHint: 15px; --h1Size: 23px;
   }
 
   body{
     margin:0;
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
     color:var(--ink);
-
-    /* ✅ 背景渐变 + 轻微颗粒感（更温柔） */
     background:
       radial-gradient(900px 600px at 20% 10%, rgba(47,111,96,.10), transparent 55%),
       radial-gradient(900px 600px at 90% 30%, rgba(245,170,110,.12), transparent 55%),
       linear-gradient(180deg, var(--bg1), var(--bg2));
   }
 
+  /* ✅ 顶部：标题 | 状态(居中) | 控件(右) */
   header{
-    padding:var(--headerPad);
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    justify-content:space-between;
-    align-items:flex-end;
+    padding:var(--headerPadY) var(--headerPadX);
+    display:grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items:center;
+    column-gap:10px;
   }
-  h1{margin:0;font-size:var(--h1Size);}
-  header p{margin:4px 0 0;color:var(--muted);font-size:14px;}
+
+  .brand h1{margin:0;font-size:var(--h1Size);}
+  .brand p{margin:3px 0 0;color:var(--muted);font-size:13px;}
+
+  .topStatus{
+    justify-self:center;
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .pill{
+    padding:6px 12px;
+    border-radius:999px;
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(17,24,39,.12);
+    font-size:15px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    white-space:nowrap;
+  }
+
+  .topControls{
+    justify-self:end;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
 
   button,select{
     font-size:16px;
@@ -141,14 +121,12 @@
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
-
   button{
     background:rgba(47,111,96,.92);
     color:#fff;
     border:none;
   }
   button:active{ transform: translateY(1px); }
-
   button.secondary{
     background:rgba(255,255,255,.82);
     color:var(--ink);
@@ -156,25 +134,9 @@
   }
 
   main{
-    padding:var(--mainPad);
+    padding:var(--mainPad) var(--headerPadX);
     max-width:980px;
     margin:auto;
-  }
-
-  .status{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:var(--sectionGap);
-  }
-  .pill{
-    padding:6px 12px;
-    border-radius:999px;
-    background:rgba(255,255,255,.72);
-    border:1px solid rgba(17,24,39,.12);
-    font-size:15px;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
   }
 
   .grid{
@@ -201,16 +163,9 @@
     gap:10px;
     margin:0 0 8px;
   }
-  .panelTop h3{
-    margin:0;
-    font-size:18px;
-  }
+  .panelTop h3{ margin:0; font-size:18px; }
 
-  .scrollBtns{
-    display:flex;
-    gap:8px;
-    align-items:center;
-  }
+  .scrollBtns{ display:flex; gap:8px; align-items:center; }
   .scrollBtn{
     background:rgba(255,255,255,.9);
     color:var(--ink);
@@ -232,7 +187,6 @@
     padding-right:2px;
     touch-action: pan-y;
   }
-
   .itemsWrap::-webkit-scrollbar{ width: 8px; }
   .itemsWrap::-webkit-scrollbar-thumb{ background: rgba(17,24,39,.18); border-radius: 8px; }
   .itemsWrap::-webkit-scrollbar-track{ background: transparent; }
@@ -251,22 +205,11 @@
     align-items:center;
     justify-content:center;
   }
-
   .item .emoji{ font-size:var(--emoji); line-height:1.05; }
-  .item .label{
-    font-size:var(--label);
-    font-weight:var(--labelWeight);
-    margin-top:5px;
-    letter-spacing:.4px;
-  }
-
+  .item .label{ font-size:var(--label); font-weight:var(--labelWeight); margin-top:5px; letter-spacing:.4px; }
   .item.placeholder{ opacity:0; pointer-events:none; }
 
-  .binsWrap{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-  }
+  .binsWrap{ display:flex; flex-direction:column; gap:12px; }
 
   .bin{
     border:2px dashed rgba(17,24,39,.22);
@@ -277,7 +220,6 @@
     transition: transform .08s ease, background .08s ease, border-color .08s ease;
     background: rgba(255,255,255,.55);
   }
-
   .bin.active{
     background: var(--accentSoft);
     border-color: rgba(47,111,96,.55);
@@ -291,19 +233,8 @@
     gap:10px;
     margin-bottom:6px;
   }
-
-  .binName{
-    font-size:var(--binTitle);
-    font-weight:800;
-    letter-spacing:.3px;
-  }
-
-  .binHintInline{
-    font-size:var(--binHint);
-    font-weight:var(--binHintWeight);
-    color:var(--binHintColor);
-    white-space:nowrap;
-  }
+  .binName{ font-size:var(--binTitle); font-weight:800; letter-spacing:.3px; }
+  .binHintInline{ font-size:var(--binHint); font-weight:700; color:var(--binHintColor); white-space:nowrap; }
 
   .binItems{
     display:flex;
@@ -312,7 +243,6 @@
     margin-top:8px;
     min-height: 34px;
   }
-
   .chip{
     background:rgba(47,111,96,.92);
     color:#fff;
@@ -321,8 +251,9 @@
     font-size:15px;
   }
 
+  /* ✅ 消息更贴近顶部，省空间 */
   .msg{
-    margin-top:6px;
+    margin:6px 0 10px;
     font-size:18px;
     color:rgba(31,41,55,.70);
     min-height:22px;
@@ -342,12 +273,18 @@
 <body class="level-20">
 
 <header>
-  <div>
+  <div class="brand">
     <h1>轻松分类</h1>
     <p>把物品拖到合适的篮子里</p>
   </div>
 
-  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+  <!-- ✅ 现在状态放到同一行中间 -->
+  <div class="topStatus">
+    <div class="pill">完成 <b id="done">0</b>/<b id="total">0</b></div>
+    <div class="pill">得分 <b id="score">0</b></div>
+  </div>
+
+  <div class="topControls">
     <select id="levelSel" title="每局物品数量">
       <option value="10">轻松（10）</option>
       <option value="20" selected>适中（20）</option>
@@ -359,11 +296,6 @@
 </header>
 
 <main>
-  <div class="status">
-    <div class="pill">完成 <b id="done">0</b>/<b id="total">0</b></div>
-    <div class="pill">得分 <b id="score">0</b></div>
-  </div>
-
   <div class="msg" id="msg"></div>
 
   <div class="grid">
@@ -396,7 +328,6 @@ const SET = {
     {id:"tools",title:"工具",hint:"用来做事"}
   ],
   items:[
-    // 食物
     {id:"food_apple",emoji:"🍎",label:"苹果",cat:"food"},
     {id:"food_banana",emoji:"🍌",label:"香蕉",cat:"food"},
     {id:"food_orange",emoji:"🍊",label:"橙子",cat:"food"},
@@ -426,7 +357,6 @@ const SET = {
     {id:"food_cake",emoji:"🍰",label:"蛋糕",cat:"food"},
     {id:"food_icecream",emoji:"🍦",label:"冰淇淋",cat:"food"},
 
-    // 衣物
     {id:"clo_shirt",emoji:"👕",label:"上衣",cat:"clothes"},
     {id:"clo_pants",emoji:"👖",label:"裤子",cat:"clothes"},
     {id:"clo_dress",emoji:"👗",label:"裙子",cat:"clothes"},
@@ -448,7 +378,6 @@ const SET = {
     {id:"clo_cap2",emoji:"🎩",label:"礼帽",cat:"clothes"},
     {id:"clo_bag",emoji:"👜",label:"包",cat:"clothes"},
 
-    // 工具
     {id:"tool_wrench",emoji:"🔧",label:"扳手",cat:"tools"},
     {id:"tool_hammer",emoji:"🔨",label:"锤子",cat:"tools"},
     {id:"tool_screwdriver",emoji:"🪛",label:"螺丝刀",cat:"tools"},
@@ -634,7 +563,6 @@ function enableDrag(el,item){
   };
 }
 
-/* ✅ 上翻/下翻：一次滚一屏 */
 function scrollItems(delta){
   const h = Math.max(120, Math.floor(itemsWrap.clientHeight * 0.85));
   itemsWrap.scrollBy({ top: delta * h, behavior: "smooth" });
